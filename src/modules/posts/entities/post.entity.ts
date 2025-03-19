@@ -27,5 +27,8 @@ export class Post extends BaseEntity {
 
   @ManyToOne(() => Category, (category) => category.posts)
   category: Category;
+
+  @Column({ nullable: true })
+  coverImage: string;
 }
 
