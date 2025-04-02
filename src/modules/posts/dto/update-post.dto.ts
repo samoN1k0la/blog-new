@@ -14,7 +14,8 @@ export class UpdatePostDto {
   @IsOptional()
   status?: string;
 
+  /*
   @IsOptional()
-  category?: Category;
+  category?: Category;*/
 }
 

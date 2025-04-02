@@ -6,13 +6,18 @@ import {
   Delete,
   Param,
   Query,
-  UseGuards
+  UseGuards,
+  UseInterceptors,
+  Body,
+  Request,
+  UploadedFile
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PostsService } from '../services/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -32,6 +37,8 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @Request() req: any
   ) {
+    console.log(req.user);
+    console.log(createPostDto);
     return this.postsService.createPost(createPostDto, req.user);
   }
 

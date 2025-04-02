@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthRepository } from '../repositories/auth.repository';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcrypt'; // For password hashing
 import { JwtService } from '@nestjs/jwt'; // For JWT token generation
 
@@ -28,7 +28,11 @@ export class AuthService {
     } 
 
     const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-    return this.authRepository.createUser(email, hashedPassword, name); // Create user and save to database
+    return this.authRepository.createUser(
+      email, 
+      hashedPassword, 
+      name
+    ); // Create user and save to database
   }
 
   // Log in and generate a JWT token

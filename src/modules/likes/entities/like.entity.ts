@@ -9,10 +9,11 @@ export class Like extends BaseEntity {
   @ManyToOne(() => User, (user) => user.likes)
   user: User;
 
+  /*
   @ManyToOne(() => Post, (post) => post.likes, { nullable: true })
   post: Post;
 
   @ManyToOne(() => Comment, (comment) => comment.likes, { nullable: true })
-  comment: Comment;
+  comment: Comment;*/
 }
 

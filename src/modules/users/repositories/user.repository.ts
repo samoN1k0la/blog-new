@@ -21,7 +21,7 @@ export class UserRepository extends Repository<User> {
   // Find users by role name
   async findByRoleName(roleName: string): Promise<User[]> {
     return this.createQueryBuilder('user')
-      .where('user.roles LIKE :roleName', { roleName: `%${roleName}%` }) 
+      .where(`FIND_IN_SET(:roleName, user.roles) > 0`, { roleName }) 
       .getMany();
   }
 }

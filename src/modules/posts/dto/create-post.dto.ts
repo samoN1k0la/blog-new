@@ -14,7 +14,8 @@ export class CreatePostDto {
   @IsOptional()
   status?: string = 'draft';
 
+  /*
   @IsOptional()
-  category?: Category;
+  category?: Category;*/
 }
 

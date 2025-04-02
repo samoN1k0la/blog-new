@@ -9,6 +9,7 @@ export class Comment extends BaseEntity {
   @Column('text')
   content: string;
 
+  /*
   @ManyToOne(() => User, (user) => user.comments, { eager: true })
   author: User;
 
@@ -16,6 +17,6 @@ export class Comment extends BaseEntity {
   post: Post;
 
   @OneToMany(() => Like, (like) => like.comment)
-  likes: Like[];
+  likes: Like[];*/
 }
 

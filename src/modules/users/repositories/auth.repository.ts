@@ -16,14 +16,19 @@ export class AuthRepository extends Repository<User> {
   }
 
   async createUser(email: string, password: string, name: string): Promise<User> {
-    const user = this.create({ email, password, name });
+    const user = this.create({ 
+      email, 
+      password, 
+      name,
+      roles: [],
+    });
     return this.save(user);
   }
 
   async gatherInfo(email: string): Promise<User | null> {
     return this.findOne({ 
       where: { email },
-      relations: ['roles', 'posts', 'comments', 'likes', 'notifications'],
+      relations: ['posts', 'comments', 'likes', 'notifications'],
     });
   }
 }

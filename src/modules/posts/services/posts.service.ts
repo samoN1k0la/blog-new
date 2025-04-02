@@ -15,18 +15,17 @@ export class PostsService {
 
   // Create a new post
   async createPost(createPostDto: CreatePostDto, user: User): Promise<Post> {
-    const post = this.postRepository.create({
-      ...createPostDto,
-      author: user,
-    });
-
-    return await this.postRepository.save(post);
+    return await this.postRepository.createPost(
+      createPostDto.title,
+      createPostDto.content,
+      user
+    );
   }
 
   // Get all posts
   async getPosts(): Promise<Post[]> {
     return this.postRepository.find({
-      relations: ['author', 'comments', 'likes', 'category'],
+      relations: ['author'],
     });
   }
 
@@ -39,7 +38,7 @@ export class PostsService {
   async getPostById(id: string): Promise<Post> {
     const post = await this.postRepository.findOne({
       where: { id },
-      relations: ['author', 'comments', 'likes', 'category'],
+      relations: ['author'],
     });
 
     if (!post) {

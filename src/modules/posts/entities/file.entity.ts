@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { Post } from '../../posts/entities/post.entity';
+import { Post } from './post.entity';
 
 @Entity()
 export class File extends BaseEntity {
@@ -15,8 +15,8 @@ export class File extends BaseEntity {
 
   @Column()
   type: string;
-
-  @ManyToOne(() => Post, (post) => post.files)
-  post: Post;
+  
+  @OneToOne(() => Post, (post: any) => post.coverImage, { onDelete: 'CASCADE' })
+  post?: Post;
 }
 

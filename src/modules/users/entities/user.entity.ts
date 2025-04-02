@@ -23,14 +23,14 @@ export class User extends BaseEntity {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
-  roles: string;
+  @Column({ type: 'simple-array', nullable: false })
+  roles: string[];
 
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
 
-  @OneToMany(() => Comment, (comment) => comment.author)
-  comments: Comment[];
+  /*@OneToMany(() => Comment, (comment) => comment.author)
+  comments: Comment[];*/
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];

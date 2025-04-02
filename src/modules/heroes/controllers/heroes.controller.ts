@@ -2,8 +2,10 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
-  Param
+  Param,
+  Body
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
@@ -12,15 +14,26 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 export class HeroesController {
 
   @Get()
-  @ApiOperation({ summary: 'Get featured posts', description: 'Retrieves a list of posts that have been featured.' })
-  async getHeroes() {}
+  @ApiOperation({ summary: 'Get all featured posts', description: 'Retrieves a list of all featured posts.' })
+  async getAllHeroes() {}
 
-  @Post(':postId')
-  @ApiOperation({ summary: 'Feature a post (Admin-only)', description: 'Allows an admin to mark a post as featured.' })
-  async featurePost(@Param('postId') id: string) {}
+  @Get(':heroId')
+  @ApiOperation({ summary: 'Get a specific featured post', description: 'Retrieves a specific featured post by ID.' })
+  async getHero(@Param('heroId') heroId: string) {}
 
-  @Delete(':postId')
-  @ApiOperation({ summary: 'Remove a post from featured (Admin-only)', description: 'Enables an admin to remove a post from the featured list.' })
-  async removeHero(@Param('postId') id: string) {}
+  @Post()
+  @ApiOperation({ summary: 'Create a featured post', description: 'Allows the creation of a new featured post.' })
+  async createHero(@Body() createHeroDto: any /* will change later */) {}
 
+  @Put(':heroId')
+  @ApiOperation({ summary: 'Update a featured post', description: 'Updates a specific featured post by ID.' })
+  async updateHero(
+    @Param('heroId') heroId: string, 
+    @Body() updateHeroDto: any /* will change to actual DTO */
+  ) {}
+
+  @Delete(':heroId')
+  @ApiOperation({ summary: 'Remove a featured post', description: 'Removes a specific featured post by ID.' })
+  async removeHero(@Param('heroId') heroId: string) {}
 }
+

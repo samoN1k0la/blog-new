@@ -41,18 +41,13 @@ export class UsersService {
     }
   }
 
-  async updateUserRole(id: string, roles: string[]): Promise<User | null> {
-
+  async updateUserRole(id: string, roles: string[]): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new Error('User not found');
+    if (!user) 
+      throw new Error('User not found');
 
-    console.log(typeof roles.join(','));
-    
-    user.roles = roles.join(',');
-
-    await this.userRepository.save(user); // Save the updated user
-
-    return user;
+    user.roles = roles;
+    return this.userRepository.save(user);
   }
 
   async getReviewers(): Promise<User[]> {

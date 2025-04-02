@@ -9,7 +9,7 @@ export class CommentRepository extends Repository<Comment> {
   }
 
   async findByPost(postId: string): Promise<Comment[]> {
-    return this.find({ where: { post: { id: postId } }, relations: ['post', 'author'] });
+    return this.find({/* where: { post: { id: postId } }, relations: ['post', 'author']*/ });
   }
 }
 
