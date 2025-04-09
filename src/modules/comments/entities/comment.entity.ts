@@ -9,11 +9,11 @@ export class Comment extends BaseEntity {
   @Column('text')
   content: string;
 
-  /*
+  
   @ManyToOne(() => User, (user) => user.comments, { eager: true })
   author: User;
 
-  @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
+  /*@ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
   post: Post;
 
   @OneToMany(() => Like, (like) => like.comment)

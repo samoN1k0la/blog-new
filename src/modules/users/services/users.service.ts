@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user.entity';
 import { DeleteResult } from 'typeorm';
+import { UserRole } from '../enums/user-role.enum';
+import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
+import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class UsersService {
@@ -9,8 +12,21 @@ export class UsersService {
     private readonly userRepository: UserRepository
   ) {}
 
-  async getUsers(): Promise<User[]> {
-    return this.userRepository.find();
+  async getUsers(query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
+    const [users, total] = await this.userRepository.findAndCount({
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    });
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(total / query.limit),
+      }
+    };
   }
 
   async getUser(id: string): Promise<User | null> {
@@ -41,7 +57,7 @@ export class UsersService {
     }
   }
 
-  async updateUserRole(id: string, roles: string[]): Promise<User> {
+  async updateUserRole(id: string, roles: UserRole[]): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) 
       throw new Error('User not found');
@@ -50,12 +66,12 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async getReviewers(): Promise<User[]> {
-    return this.userRepository.findByRoleName('REVIEWER');
+  async getReviewers(query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
+    return this.userRepository.findByRoleNameWithPagination('REVIEWER', query);
   }
 
-  async getEditors(): Promise<User[]> {
-    return this.userRepository.findByRoleName('EDITOR');
-  }
+  async getEditors(query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
+    return this.userRepository.findByRoleNameWithPagination('EDITOR', query);
+  } 
 }
 

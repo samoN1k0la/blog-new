@@ -7,9 +7,12 @@ import {
   UseGuards,
   Request
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { LoginDto } from '../dto/login.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { ResetPasswordDto } from '../dto/reset-pass.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -18,6 +21,7 @@ export class AuthController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get my info', description: 'Get account info of the currently logged-in session.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async me(@Request() req: any) {
     const email = req.user.email;
@@ -26,7 +30,7 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Log in and get token', description: 'Log in into a existing user account and on success get session JWT.' })
-  async login(@Body() body: { email: string; password: string }) {
+  async login(@Body() body: LoginDto) {
     return this.authService.login(body.email, body.password); // Call the login service
   } 
 
@@ -38,12 +42,13 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user', description: 'Register a new user.' })
-  async register(@Body() body: { email: string; password: string; name: string }) {
+  async register(@Body() body: RegisterDto) {
     return this.authService.register(body.email, body.password, body.name); // Register a user
   }
 
   @Post('auth')
   @ApiOperation({ summary: 'Token refresh', description: 'Refresh the session token only if an action is currently in progress or if the user has initiated activity within the inactivity period, preventing automatic logout after 15 minutes.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async refreshToken(@Request() req: any) {
     const email = req.user.email;
@@ -53,8 +58,9 @@ export class AuthController {
 
   @Patch('pass')
   @ApiOperation({ summary: 'Change password', description: 'Change password of the currently logged-in account.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async resetPassword(@Body() body: { oldPassword: string; newPassword: string }, @Request() req: any) {
+  async resetPassword(@Body() body: ResetPasswordDto, @Request() req: any) {
     const email = req.user.email;
     console.log(email);
     return this.authService.resetPassword(body.oldPassword, body.newPassword, email); // Reset password

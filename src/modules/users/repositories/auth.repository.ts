@@ -28,7 +28,7 @@ export class AuthRepository extends Repository<User> {
   async gatherInfo(email: string): Promise<User | null> {
     return this.findOne({ 
       where: { email },
-      relations: ['posts', 'comments', 'likes', 'notifications'],
+      relations: ['posts'],
     });
   }
 }
