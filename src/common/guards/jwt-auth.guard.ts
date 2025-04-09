@@ -11,16 +11,17 @@ export class JwtAuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization?.split(' ')[1]; // Bearer token
+    const token = request.headers.authorization?.split(' ')[1];
 
     if (!token) {
       throw new Error('Unauthorized');
     }
 
     try {
-      const decoded = this.jwtService.verify(token); // Verify JWT token
-      request.user = decoded; // Attach user data to request
-      //console.log(request.user);
+      const decoded = this.jwtService.verify(token);
+      decoded.id = decoded.sub;
+      request.user = decoded;
+      console.log(request.user);
       return true;
     } catch (error) {
       throw new Error('Unauthorized');

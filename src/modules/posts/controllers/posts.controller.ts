@@ -12,7 +12,7 @@ import {
   Request,
   UploadedFile
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PostsService } from '../services/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
@@ -32,6 +32,7 @@ export class PostsController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new post (Editor & Admin)', description: 'Allows editors and admins to create and publish a new post.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async createPost(
     @Body() createPostDto: CreatePostDto,
@@ -44,6 +45,7 @@ export class PostsController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get my posts', description: 'Returns a list of posts created by the currently authenticated user.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard) 
   async getMyPosts(@Request() req: any) {
     return this.postsService.getMyPosts(req.user);
@@ -57,6 +59,7 @@ export class PostsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Edit a post (Editor & Admin)', description: 'Allows editors and admins to modify an existing post.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async editPost(
     @Param('id') id: string,
@@ -68,6 +71,7 @@ export class PostsController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a post (Editor & Admin)', description: 'Enables editors and admins to remove a post from the system.' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async deletePost(@Param('id') id: string, @Request() req: any) {
     await this.postsService.deletePost(id, req.user);
