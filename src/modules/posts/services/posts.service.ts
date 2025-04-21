@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PostRepository } from '../repositories/post.repository';
 import { Post } from '../entities/post.entity';
+import { File } from '../entities/file.entity';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { User } from '../../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
+import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { PostStatus } from '../enums/post-status.enum';
 
 @Injectable()
 export class PostsService {
@@ -13,32 +17,52 @@ export class PostsService {
     private readonly postRepository: PostRepository
   ) {}
 
-  // Create a new post
-  async createPost(createPostDto: CreatePostDto, user: User): Promise<Post> {
+  async createPost(createPostDto: CreatePostDto, user: User, file?: Express.Multer.File): Promise<Post | null> {
+    let coverImage: File | undefined = undefined;
+
+    if (file) {
+      coverImage = new File();
+      coverImage.filename = file.filename;
+      coverImage.path = file.path;
+      coverImage.url = `/uploads/${file.filename}`;
+      coverImage.type = file.mimetype;
+    }
+
     return await this.postRepository.createPost(
       createPostDto.title,
       createPostDto.content,
-      user
+      user,
+      createPostDto.status,
+      coverImage
     );
   }
 
-  // Get all posts
-  async getPosts(): Promise<Post[]> {
-    return this.postRepository.find({
-      relations: ['author'],
+  async getPosts(query: PaginationQueryDto): Promise<PaginatedResponse<Post>> {
+    const [posts, total] = await this.postRepository.findAndCount({
+      relations: ['author', 'coverImage'],
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
     });
+
+    return {
+      data: posts,
+      meta: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(total / query.limit),
+      }
+    };
+  } 
+
+  async getMyPosts(query: PaginationQueryDto, user: User): Promise<PaginatedResponse<Post>> {
+    return this.postRepository.findByAuthor(query, user.id);
   }
 
-  // Get posts by the currently authenticated user
-  async getMyPosts(user: User): Promise<Post[]> {
-    return this.postRepository.findByAuthor(user.id);
-  }
-
-  // Get a post by ID
   async getPostById(id: string): Promise<Post> {
     const post = await this.postRepository.findOne({
       where: { id },
-      relations: ['author'],
+      relations: ['author', 'coverImage'],
     });
 
     if (!post) {
@@ -48,59 +72,53 @@ export class PostsService {
     return post;
   }
 
-  // Edit an existing post
-  async editPost(id: string, updatePostDto: UpdatePostDto, user: User): Promise<Post> {
+  async editPost(
+    id: string,
+    updatePostDto: UpdatePostDto,
+    user: User,
+    file?: Express.Multer.File,
+  ): Promise<Post> {
     const post = await this.getPostById(id);
 
-    // Check if the user is the author or has an admin/editor role
     if (post.author.id !== user.id && !user.roles.includes('admin') && !user.roles.includes('editor')) {
       throw new ForbiddenException('You do not have permission to edit this post');
     }
 
     Object.assign(post, updatePostDto);
 
-    return this.postRepository.save(post);
-  }
+    if (file) {
+      const coverImage = new File();
+      coverImage.filename = file.filename;
+      coverImage.path = file.path;
+      coverImage.url = `/uploads/${file.filename}`;
+      coverImage.type = file.mimetype;
 
-  // Delete a post
+      post.coverImage = coverImage;
+    }
+
+    return this.postRepository.save(post);
+  } 
+
   async deletePost(id: string, user: User): Promise<void> {
     const post = await this.getPostById(id);
-
-    // Check if the user is the author or has an admin/editor role
-    if (post.author.id !== user.id && !user.roles.includes('admin') && !user.roles.includes('editor')) {
-      throw new ForbiddenException('You do not have permission to delete this post');
-    }
 
     await this.postRepository.remove(post);
   }
 
-  // Change post status
-  async changePostStatus(id: string, status: string): Promise<Post> {
-    const validStatuses = ['draft', 'pending', 'published'];
-
-    if (!validStatuses.includes(status)) {
-      throw new ForbiddenException('Invalid status');
-    }
-
+  async changePostStatus(id: string, status: PostStatus): Promise<Post> {
     const post = await this.getPostById(id);
     post.status = status;
-
     return this.postRepository.save(post);
   }
 
-  // Get posts by a specific user
-  async getPostsByUserId(userId: string): Promise<Post[]> {
-    return this.postRepository.findByAuthor(userId);
+  async getPostsByUserId(query: PaginationQueryDto, userId: string): Promise<PaginatedResponse<Post>> {
+    return this.postRepository.findByAuthor(query, userId);
   }
 
-  // Search posts based on a keyword
   async searchPosts(query: string): Promise<Post[]> {
-    return this.postRepository.createQueryBuilder('post')
-      .where('post.title LIKE :query OR post.content LIKE :query', { query: `%${query}%` })
-      .getMany();
+    return this.postRepository.searchPosts(query);
   }
-
-  // Get recent posts
+ 
   async getRecentPosts(limit: number): Promise<Post[]> {
     return this.postRepository.findRecent(limit);
   }

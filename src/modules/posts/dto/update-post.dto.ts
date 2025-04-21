@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsEnum } from 'class-validator';
 import { Category } from '../../categories/entities/category.entity';
+import { PostStatus } from '../enums/post-status.enum';
 
 export class UpdatePostDto {
   @ApiProperty({
@@ -17,18 +18,25 @@ export class UpdatePostDto {
   })
   @IsString()
   @IsOptional()
-  content?: string;
+  content: string;
 
   @ApiProperty({
     description: "Post status (draft, pending or published)",
-    example: 'draft',
+    example: PostStatus.DRAFT,
+    enum: PostStatus,
+    enumName: 'PostStatus'
   })
-  @IsEnum(['draft', 'pending', 'published'])
+  @IsEnum(PostStatus)
   @IsOptional()
-  status?: string = 'draft'; 
+  status?: PostStatus = PostStatus.DRAFT;
 
-  /*
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description: 'Post cover image file'
+  })
   @IsOptional()
-  category?: Category;*/
+  coverImage?: Express.Multer.File;
 }
 

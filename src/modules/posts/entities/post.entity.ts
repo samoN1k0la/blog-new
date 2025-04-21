@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, OneToOne,
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { File } from './file.entity';
+import { PostStatus } from '../enums/post-status.enum'; 
 
 @Entity()
 export class Post extends BaseEntity {
@@ -11,8 +12,12 @@ export class Post extends BaseEntity {
   @Column('text')
   content: string;
 
-  @Column({ default: 'draft' }) // Can be 'draft', 'pending', 'published'
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: PostStatus,
+    default: PostStatus.DRAFT
+  })
+  status: PostStatus;
 
   @ManyToOne(() => User, (user) => user.posts, { onDelete: 'CASCADE' })
   author: User; 

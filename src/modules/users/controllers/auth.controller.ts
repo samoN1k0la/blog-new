@@ -20,7 +20,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('me')
-  @ApiOperation({ summary: 'Get my info', description: 'Get account info of the currently logged-in session.' })
+  @ApiOperation({ summary: 'Get my info' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async me(@Request() req: any) {
@@ -29,40 +29,40 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Log in and get token', description: 'Log in into a existing user account and on success get session JWT.' })
+  @ApiOperation({ summary: 'Log in and get token' })
   async login(@Body() body: LoginDto) {
-    return this.authService.login(body.email, body.password); // Call the login service
+    return this.authService.login(body.email, body.password); 
   } 
 
   @Post('logout')
-  @ApiOperation({ summary: 'Log out of the current session', description: 'Log out of the current session, thus invalidating the session token.' })
+  @ApiOperation({ summary: 'Log out of the current session' })
   async logout() {
     return this.authService.logout();
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user', description: 'Register a new user.' })
+  @ApiOperation({ summary: 'Register a new user' })
   async register(@Body() body: RegisterDto) {
-    return this.authService.register(body.email, body.password, body.name); // Register a user
+    return this.authService.register(body.email, body.password, body.name); 
   }
 
   @Post('auth')
-  @ApiOperation({ summary: 'Token refresh', description: 'Refresh the session token only if an action is currently in progress or if the user has initiated activity within the inactivity period, preventing automatic logout after 15 minutes.' })
+  @ApiOperation({ summary: 'Token refresh' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async refreshToken(@Request() req: any) {
     const email = req.user.email;
     //console.log(email);
-    return this.authService.refreshToken(email); // Refresh the session token
+    return this.authService.refreshToken(email); 
   }
 
   @Patch('pass')
-  @ApiOperation({ summary: 'Change password', description: 'Change password of the currently logged-in account.' })
+  @ApiOperation({ summary: 'Change password' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async resetPassword(@Body() body: ResetPasswordDto, @Request() req: any) {
     const email = req.user.email;
     console.log(email);
-    return this.authService.resetPassword(body.oldPassword, body.newPassword, email); // Reset password
+    return this.authService.resetPassword(body.oldPassword, body.newPassword, email); 
   }
 }
