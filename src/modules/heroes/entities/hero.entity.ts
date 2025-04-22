@@ -1,18 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { Post } from '../../posts/entities/post.entity';
+import { File } from '../../posts/entities/file.entity';
 
 @Entity()
 export class Hero extends BaseEntity {
+  @Column()
+  title: string;
 
-  @ManyToOne(() => Post, { nullable: false })
-  post: Post;
-
-  @Column({ type: 'boolean', default: true })
-  isFeatured: boolean;
-
-  @Column({ type: 'timestamp', nullable: true })
-  featuredAt: Date;
+  @OneToOne(() => File, { nullable: true, cascade: true })
+  @JoinColumn()
+  coverImage?: File;
 }
-
 
