@@ -26,6 +26,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 import { Post as PostEntity } from '../entities/post.entity';
 import { ChangePostStatusDto } from '../dto/change-post-status.dto';
 
@@ -36,8 +37,11 @@ export class PostsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all posts' })
-  async getPosts(@Query() query: PaginationQueryDto): Promise<PaginatedResponse<PostEntity>> {
-    return this.postsService.getPosts(query);
+  async getPosts(
+    @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto
+  ): Promise<PaginatedResponse<PostEntity>> {
+    return this.postsService.getPosts(query, filters);
   } 
 
   @Post()
@@ -74,16 +78,17 @@ export class PostsController {
   @UseGuards(JwtAuthGuard) 
   async getMyPosts(
     @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto,
     @Request() req: any
   ): Promise<PaginatedResponse<PostEntity>> {
-    return this.postsService.getMyPosts(query, req.user);
+    return this.postsService.getMyPosts(query, req.user, filters);
   }
   
-  @Get('search')
+  /*@Get('search')
   @ApiOperation({ summary: 'Search published posts' })
   async searchPosts(@Query('query') query: string) {
     return this.postsService.searchPosts(query);
-  }
+  }*/
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific post' })
@@ -146,8 +151,9 @@ export class PostsController {
   @ApiOperation({ summary: 'Get all posts by a specific user' })
   async getPostsByUserId(
     @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto,
     @Param('id') id: string
   ): Promise<PaginatedResponse<PostEntity>> {
-    return this.postsService.getPostsByUserId(query, id);
+    return this.postsService.getPostsByUserId(query, id, filters);
   }
 }

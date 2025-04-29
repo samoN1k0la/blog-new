@@ -5,6 +5,8 @@ import { Hero } from '../entities/hero.entity';
 import { File } from '../../posts/entities/file.entity';
 import { CreateHeroDto } from '../dto/create-hero.dto';
 import { UpdateHeroDto } from '../dto/update-hero.dto';
+import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 
 @Injectable()
 export class HeroesService {
@@ -24,8 +26,11 @@ export class HeroesService {
     return this.heroRepository.save(hero);
   }
 
-  async getAllHeroes(query: any): Promise<{ data: Hero[]; meta: any }> {
-    return this.heroRepository.findWithPagination(query);
+  async getAllHeroes(
+    query: PaginationQueryDto,
+    filters: FilterQueryDto
+  ): Promise<{ data: Hero[]; meta: any }> {
+    return this.heroRepository.findWithPagination(query, filters);
   }
 
   async getHero(id: string): Promise<Hero> {

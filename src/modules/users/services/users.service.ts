@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user.entity';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, ILike } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 
 @Injectable()
 export class UsersService {
@@ -12,11 +13,24 @@ export class UsersService {
     private readonly userRepository: UserRepository
   ) {}
 
-  async getUsers(query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
-    const [users, total] = await this.userRepository.findAndCount({
+  async getUsers(
+    query: PaginationQueryDto,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    const findOptions = {
       skip: (query.page - 1) * query.limit,
       take: query.limit,
-    });
+    } as any;
+
+    if (filters.searchQuery) {
+      const search = `%${filters.searchQuery}%`;
+      findOptions.where = [
+        { name: ILike(search) },
+        { email: ILike(search) },
+      ];
+    }
+
+    const [users, total] = await this.userRepository.findAndCount(findOptions);
 
     return {
       data: users,
@@ -27,6 +41,20 @@ export class UsersService {
         totalPages: Math.ceil(total / query.limit),
       }
     };
+  } 
+
+  async getReviewers(
+    query: PaginationQueryDto,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.userRepository.findByRoleNameWithPagination('REVIEWER', query, filters);
+  }
+
+  async getEditors(
+    query: PaginationQueryDto,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.userRepository.findByRoleNameWithPagination('EDITOR', query, filters);
   }
 
   async getUser(id: string): Promise<User | null> {
@@ -65,13 +93,5 @@ export class UsersService {
     user.roles = roles;
     return this.userRepository.save(user);
   }
-
-  async getReviewers(query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
-    return this.userRepository.findByRoleNameWithPagination('REVIEWER', query);
-  }
-
-  async getEditors(query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
-    return this.userRepository.findByRoleNameWithPagination('EDITOR', query);
-  } 
 }
 

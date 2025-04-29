@@ -6,8 +6,10 @@ import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { User } from '../../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ILike } from 'typeorm';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 import { PostStatus } from '../enums/post-status.enum';
 
 @Injectable()
@@ -37,12 +39,25 @@ export class PostsService {
     );
   }
 
-  async getPosts(query: PaginationQueryDto): Promise<PaginatedResponse<Post>> {
-    const [posts, total] = await this.postRepository.findAndCount({
-      relations: ['author', 'coverImage'],
+  async getPosts(
+    query: PaginationQueryDto,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<Post>> {
+    const findOptions = {
       skip: (query.page - 1) * query.limit,
       take: query.limit,
-    });
+      relations: ['author', 'coverImage'],
+    } as any;
+    
+    if (filters.searchQuery) {
+      const search = `%${filters.searchQuery}%`;
+      findOptions.where = [
+        { title: ILike(search) },
+        { content: ILike(search) },
+      ];
+    }
+
+    const [posts, total] = await this.postRepository.findAndCount(findOptions); 
 
     return {
       data: posts,
@@ -55,8 +70,12 @@ export class PostsService {
     };
   } 
 
-  async getMyPosts(query: PaginationQueryDto, user: User): Promise<PaginatedResponse<Post>> {
-    return this.postRepository.findByAuthor(query, user.id);
+  async getMyPosts(
+    query: PaginationQueryDto, 
+    user: User,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<Post>> {
+    return this.postRepository.findByAuthor(query, user.id, filters);
   }
 
   async getPostById(id: string): Promise<Post> {
@@ -111,8 +130,12 @@ export class PostsService {
     return this.postRepository.save(post);
   }
 
-  async getPostsByUserId(query: PaginationQueryDto, userId: string): Promise<PaginatedResponse<Post>> {
-    return this.postRepository.findByAuthor(query, userId);
+  async getPostsByUserId(
+    query: PaginationQueryDto, 
+    userId: string,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<Post>> {
+    return this.postRepository.findByAuthor(query, userId, filters);
   }
 
   async searchPosts(query: string): Promise<Post[]> {

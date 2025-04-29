@@ -17,6 +17,7 @@ import { UpdateHeroDto } from '../dto/update-hero.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 import { Hero } from '../entities/hero.entity';
 
 @ApiTags('Heroes')
@@ -26,8 +27,11 @@ export class HeroesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all heroes' })
-  async getAllHeroes(@Query() query: PaginationQueryDto): Promise<PaginatedResponse<Hero>> {
-    return this.heroesService.getAllHeroes(query);
+  async getAllHeroes(
+    @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto
+  ): Promise<PaginatedResponse<Hero>> {
+    return this.heroesService.getAllHeroes(query, filters);
   }
 
   @Get(':heroId')

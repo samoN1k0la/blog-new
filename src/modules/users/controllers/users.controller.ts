@@ -14,6 +14,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -22,20 +23,29 @@ export class UsersController {
 
   @Get()
   @ApiOperation({ summary: 'Retrieve all users' })
-  async getUsers(@Query() query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
-    return this.usersService.getUsers(query);
+  async getUsers(
+    @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.usersService.getUsers(query, filters);
   }
 
   @Get('reviewer')
   @ApiOperation({ summary: 'List all reviewers' })
-  async getReviewers(@Query() query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
-    return this.usersService.getReviewers(query);
+  async getReviewers(
+    @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.usersService.getReviewers(query, filters);
   }
 
   @Get('editor')
   @ApiOperation({ summary: 'List all editors' })
-  async getEditors(@Query() query: PaginationQueryDto): Promise<PaginatedResponse<User>> {
-    return this.usersService.getEditors(query);
+  async getEditors(
+    @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.usersService.getEditors(query, filters);
   }
 
   @Get(':id')

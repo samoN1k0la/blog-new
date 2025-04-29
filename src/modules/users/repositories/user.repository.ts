@@ -3,6 +3,7 @@ import { Repository, DataSource } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -20,13 +21,23 @@ export class UserRepository extends Repository<User> {
     return this.findOne({ where: { name } });
   }
 
-  // Find users by role name
   async findByRoleNameWithPagination(
     roleName: string,
-    pagination: PaginationQueryDto
+    pagination: PaginationQueryDto,
+    filters: FilterQueryDto
   ): Promise<PaginatedResponse<User>> {
-    const [users, total] = await this.createQueryBuilder('user')
-      .where(`FIND_IN_SET(:roleName, user.roles) > 0`, { roleName })
+    const queryBuilder = this.createQueryBuilder('user')
+      .where('FIND_IN_SET(:roleName, user.roles) > 0', { roleName });
+
+    if (filters.searchQuery) {
+      queryBuilder.andWhere(
+        '(user.name LIKE :search OR ' + 
+        'user.email LIKE :search)',
+        { search: `%${filters.searchQuery}%` }
+      );
+    }
+
+    const [users, total] = await queryBuilder
       .skip((pagination.page - 1) * pagination.limit)
       .take(pagination.limit)
       .getManyAndCount();

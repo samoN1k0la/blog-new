@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { Post } from '../entities/post.entity';
 import { User } from '../../users/entities/user.entity';
 import { File } from '../entities/file.entity';
 import { PaginatedResponse } from '../../../common/interfaces/paginated-response.interface';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { FilterQueryDto } from '../../../common/dto/filter-query.dto';
 import { PostStatus } from '../enums/post-status.enum';
 
 @Injectable()
@@ -39,17 +40,28 @@ export class PostRepository extends Repository<Post> {
     });
   }
 
-
   async findByAuthor(
     query: PaginationQueryDto, 
-    userId: string
+    userId: string,
+    filters: FilterQueryDto
   ): Promise<PaginatedResponse<Post>> {
-    const [posts, total] = await this.findAndCount({
-      where: { author: { id: userId } },
-      relations: ['author', 'coverImage'],
-      skip: (query.page - 1) * query.limit,
-      take: query.limit,
-    });
+    const queryBuilder = this.createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .leftJoinAndSelect('post.coverImage', 'coverImage')
+      .where('author.id = :userId', { userId });
+
+    if (filters.searchQuery) {
+      const search = `%${filters.searchQuery}%`;
+      queryBuilder.andWhere(new Brackets(qb => {
+        qb.where('LOWER(post.title) LIKE LOWER(:search)', { search })
+          .orWhere('LOWER(post.content) LIKE LOWER(:search)', { search });
+      }));
+    }
+
+    const [posts, total] = await queryBuilder
+      .skip((query.page - 1) * query.limit)
+      .take(query.limit)
+      .getManyAndCount();
 
     return {
       data: posts,
