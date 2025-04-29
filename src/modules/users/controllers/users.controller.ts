@@ -29,8 +29,17 @@ export class UsersController {
   ): Promise<PaginatedResponse<User>> {
     return this.usersService.getUsers(query, filters);
   }
+  
+  @Get('admins')
+  @ApiOperation({ summary: 'List all admins' })
+  async getAdmins(
+    @Query() query: PaginationQueryDto,
+    @Query() filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.usersService.getAdmins(query, filters);
+  } 
 
-  @Get('reviewer')
+  @Get('reviewers')
   @ApiOperation({ summary: 'List all reviewers' })
   async getReviewers(
     @Query() query: PaginationQueryDto,
@@ -39,7 +48,7 @@ export class UsersController {
     return this.usersService.getReviewers(query, filters);
   }
 
-  @Get('editor')
+  @Get('editors')
   @ApiOperation({ summary: 'List all editors' })
   async getEditors(
     @Query() query: PaginationQueryDto,

@@ -43,6 +43,13 @@ export class UsersService {
     };
   } 
 
+  async getAdmins(
+    query: PaginationQueryDto,
+    filters: FilterQueryDto
+  ): Promise<PaginatedResponse<User>> {
+    return this.userRepository.findByRoleNameWithPagination('ADMIN', query, filters);
+  } 
+
   async getReviewers(
     query: PaginationQueryDto,
     filters: FilterQueryDto
